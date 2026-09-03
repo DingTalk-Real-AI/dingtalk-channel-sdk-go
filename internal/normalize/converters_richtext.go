@@ -12,7 +12,7 @@ func convertRichText(m map[string]interface{}, atUsers []types.AtUser) (string, 
 }
 
 // parseRichText 遍历富文本段：text 段拼接正文，at 段收集 userId/手机号提及，
-// picture/file 段提取下载资源。
+// picture/file 段提取下载资源（对齐 lark channel-sdk 的富文本附件区能力）。
 // 脏数据防御：段值类型不符或下载码为空时跳过该段，不影响其余段落；
 // 同一下载码在单条消息内去重。
 func parseRichText(m map[string]interface{}, atUsers []types.AtUser) (string, []types.Mention, []types.Resource) {

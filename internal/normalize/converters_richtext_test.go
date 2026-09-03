@@ -48,7 +48,7 @@ func TestConvertRichTextAtUsersMerge(t *testing.T) {
 	}
 }
 
-// richText picture/file 段提取为资源，重复下载码去重。
+// 对齐 lark channel-sdk 富文本附件区：picture/file 段提取为资源，重复下载码去重。
 func TestConvertRichTextResources(t *testing.T) {
 	payload := `{"richText":[
 		{"type":"text","text":"图1 "},

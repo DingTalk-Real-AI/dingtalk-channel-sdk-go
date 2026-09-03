@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-// DownloadFileToFile：流式落盘、原子重命名、不整块占内存。
+// 对齐 lark channel-sdk downloadResourceToFile：流式落盘、原子重命名、不整块占内存。
 func TestDownloadFileToFile(t *testing.T) {
 	media := strings.Repeat("dingtalk-media-bytes-", 500)
 	var srv *httptest.Server
