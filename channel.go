@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
@@ -302,9 +305,53 @@ func (c *Channel) lockConversation(id string) func() {
 
 // ── DownloadFile ──
 
-// DownloadFile 下载媒体文件。
+// DownloadFile 下载媒体文件到内存。
 // mediaType: "image" | "file" | "video" | "voice"
 func (c *Channel) DownloadFile(ctx context.Context, downloadCode, msgID, mediaType string) ([]byte, error) {
+	resp, err := c.openMedia(ctx, downloadCode, msgID, mediaType)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
+}
+
+// DownloadFileToFile 流式下载媒体文件到本地路径，不整块占用内存（大附件只有流缓冲开销）。
+// destPath 的父目录必须已存在；先写同目录临时文件再原子重命名，失败不落半截文件。
+// 返回写入的字节数。mediaType: "image" | "file" | "video" | "voice"
+func (c *Channel) DownloadFileToFile(ctx context.Context, downloadCode, msgID, mediaType, destPath string) (int64, error) {
+	if destPath == "" {
+		return 0, &channelError{"destPath cannot be empty"}
+	}
+	tmp, err := os.CreateTemp(filepath.Dir(destPath), "."+filepath.Base(destPath)+".tmp-*")
+	if err != nil {
+		return 0, err
+	}
+	tmpName := tmp.Name()
+
+	resp, err := c.openMedia(ctx, downloadCode, msgID, mediaType)
+	if err != nil {
+		_ = tmp.Close()
+		_ = os.Remove(tmpName)
+		return 0, err
+	}
+	n, err := io.Copy(tmp, resp.Body)
+	_ = resp.Body.Close()
+	if cerr := tmp.Close(); err == nil {
+		err = cerr
+	}
+	if err == nil {
+		err = os.Rename(tmpName, destPath)
+	}
+	if err != nil {
+		_ = os.Remove(tmpName)
+		return n, err
+	}
+	return n, nil
+}
+
+// openMedia 换取媒体下载 URL（含 SSRF 校验）并打开响应体。
+func (c *Channel) openMedia(ctx context.Context, downloadCode, msgID, mediaType string) (*http.Response, error) {
 	if downloadCode == "" {
 		return nil, &channelError{"downloadCode cannot be empty"}
 	}
@@ -335,9 +382,9 @@ func (c *Channel) DownloadFile(ctx context.Context, downloadCode, msgID, mediaTy
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, &channelError{"download failed: http " + string(rune(resp.StatusCode))}
+		_ = resp.Body.Close()
+		return nil, &channelError{"download failed: http " + strconv.Itoa(resp.StatusCode)}
 	}
-	return io.ReadAll(resp.Body)
+	return resp, nil
 }

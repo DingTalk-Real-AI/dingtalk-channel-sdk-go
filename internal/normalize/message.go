@@ -49,7 +49,7 @@ func parseContent(msgType string, rawContent json.RawMessage, atUsers []types.At
 	case "text":
 		text = convertText(m)
 	case "richText":
-		text, mentions = convertRichText(m, atUsers)
+		text, mentions, resources = convertRichText(m, atUsers)
 	case "picture":
 		text, resources = convertPicture(m)
 	case "file":

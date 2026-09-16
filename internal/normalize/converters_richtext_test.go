@@ -47,3 +47,46 @@ func TestConvertRichTextAtUsersMerge(t *testing.T) {
 		t.Fatal("parseContent itself should not merge atUsers")
 	}
 }
+
+// richText picture/file 段提取为资源，重复下载码去重。
+func TestConvertRichTextResources(t *testing.T) {
+	payload := `{"richText":[
+		{"type":"text","text":"图1 "},
+		{"type":"picture","picture":"dc-1"},
+		{"type":"picture","picture":"dc-1"},
+		{"type":"picture","picture":"dc-2"},
+		{"type":"file","downloadCode":"dc-3","fileName":"report.pdf"},
+		{"type":"text","text":" 图2"}
+	]}`
+	text, resources, _ := parseContent("richText", json.RawMessage(payload), nil)
+	if text != "图1  图2" {
+		t.Fatalf("richText text = %q", text)
+	}
+	if len(resources) != 3 {
+		t.Fatalf("resources = %d, want 3（重复 dc-1 去重）: %+v", len(resources), resources)
+	}
+	if resources[0].Type != "image" || resources[0].DownloadCode != "dc-1" {
+		t.Fatalf("resource[0] wrong: %+v", resources[0])
+	}
+	if resources[2].Type != "file" || resources[2].DownloadCode != "dc-3" || resources[2].FileName != "report.pdf" {
+		t.Fatalf("file resource wrong: %+v", resources[2])
+	}
+}
+
+// 脏数据防御：非法段值不影响其余段落，也不会产生空资源。
+func TestConvertRichTextResourcesDirtyData(t *testing.T) {
+	payload := `{"richText":[
+		{"type":"picture","picture":123},
+		{"type":"picture","picture":""},
+		{"type":"picture"},
+		{"type":"file","downloadCode":42},
+		{"type":"text","text":"ok"}
+	]}`
+	text, resources, _ := parseContent("richText", json.RawMessage(payload), nil)
+	if text != "ok" {
+		t.Fatalf("text = %q, want ok", text)
+	}
+	if resources != nil {
+		t.Fatalf("dirty segments must yield no resources, got %+v", resources)
+	}
+}
