@@ -1,7 +1,5 @@
 # DingTalk Channel SDK — Four-Language Unified Contract (SPEC v0.1)
 
-**English** | [简体中文](./SPEC.zh-CN.md)
-
 > Positioning: **Session access layer decoupled from Agent runtime**. The SDK handles the "channel" dirty work,
 > developers only write "what the user said, what the bot replies".
 

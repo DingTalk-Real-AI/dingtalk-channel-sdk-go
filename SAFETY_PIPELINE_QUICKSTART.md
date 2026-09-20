@@ -24,7 +24,7 @@ func main() {
 	cfg := channel.Config{
 		ClientID:     os.Getenv("DD_CLIENT_ID"),
 		ClientSecret: os.Getenv("DD_CLIENT_SECRET"),
-		Safety:       types.DefaultSafetyConfig(), // 过期/去重/策略/锁/批处理默认全开
+		Safety:       types.DefaultSafetyConfig(), // 过期/去重/策略/锁默认全开
 	}
 
 	bot := channel.New(cfg)
@@ -79,7 +79,8 @@ cfg.Safety.Dedup = types.DedupConfig{
 	MaxEntries:    5000,           // LRU 容量上限
 	SweepInterval: 5 * time.Minute,
 }
-cfg.Safety.MediaBatch = types.MediaBatchConfig{
+// 媒体批处理默认关闭，显式配置以启用
+cfg.MediaBatch = &channel.MediaBatchConfig{
 	Enabled:  true,
 	DelayMs:  800, // 800ms 合并窗口
 	MaxItems: 9,   // 单批最多合并 9 个媒体
@@ -88,6 +89,12 @@ cfg.Safety.StaleWindow = 30 * time.Minute // 过期消息窗口
 cfg.Safety.DropSelfSent = true            // 丢弃机器人自发的消息
 
 bot := channel.New(cfg)
+
+// 注册批处理消息处理器
+bot.OnBatchMessage(func(ctx context.Context, batch *channel.BatchMessage, reply channel.Reply) error {
+	log.Printf("Received batch with %d media items", len(batch.Messages))
+	return reply.Text(ctx, fmt.Sprintf("Received %d media items", len(batch.Messages)))
+})
 ```
 
 **效果**: 用户连续上传 5 张图片 → 合并为一个批次 → 减少 API 调用。

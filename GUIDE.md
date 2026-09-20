@@ -1,7 +1,5 @@
 # DingTalk Channel SDK Integration Guide
 
-**English** | [简体中文](./GUIDE.zh-CN.md)
-
 Connect your Agent to DingTalk for real-time conversations in **group chats and direct messages**. The SDK handles event access, message parsing and deduplication, reply sending, streaming output (typewriter effect), media upload/download, and card interactions—you only need to tell it "what the user said, what the bot replies".
 
 ## User Experience
