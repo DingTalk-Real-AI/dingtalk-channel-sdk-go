@@ -3,7 +3,7 @@ package normalize
 import (
 	"strings"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 // convertRichText 从 richText 数组提取拼接文本与 @提及列表。

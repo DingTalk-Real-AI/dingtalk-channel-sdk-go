@@ -9,7 +9,7 @@
 ## 安装
 
 ```bash
-go get github.com/typefield/dingtalk-channel-sdk-go
+go get github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go
 ```
 
 ## 最小示例
@@ -22,7 +22,7 @@ import (
 	"log"
 	"os"
 
-	channel "github.com/typefield/dingtalk-channel-sdk-go"
+	channel "github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go"
 )
 
 func main() {
@@ -82,7 +82,7 @@ return s.Finish("")
 业务代码通常只需导入根包：
 
 ```go
-import channel "github.com/typefield/dingtalk-channel-sdk-go"
+import channel "github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go"
 ```
 
 `types` 为公开共享类型；`internal/` 属实现细节，不在兼容性承诺范围内。

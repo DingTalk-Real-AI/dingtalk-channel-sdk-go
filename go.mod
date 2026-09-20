@@ -1,4 +1,4 @@
-module github.com/typefield/dingtalk-channel-sdk-go
+module github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go
 
 go 1.22
 

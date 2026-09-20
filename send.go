@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/internal/outbound"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/internal/outbound"
 )
 
 // SendTarget 主动发消息目标。

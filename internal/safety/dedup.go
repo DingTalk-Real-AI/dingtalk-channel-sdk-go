@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 // Deduper 双层去重：协议层 messageId + 业务层 msgId，TTL + LRU + 后台清理（SPEC §3.2 / E6）。

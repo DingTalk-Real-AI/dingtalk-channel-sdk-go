@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/internal/safety"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/internal/safety"
 )
 
 // ---- 测试基建：假钉钉 API（token / 卡片五步 / webhook）----

@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/internal/normalize"
-	"github.com/typefield/dingtalk-channel-sdk-go/internal/safety"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/internal/normalize"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/internal/safety"
 )
 
 // MessageHandler 业务处理器：只关心"用户说了什么、机器人回什么"。

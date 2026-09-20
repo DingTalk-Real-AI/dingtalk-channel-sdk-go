@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 // fallbackTestServer 构造带计数的服务端：token/card/webhook/proactive 各自独立计数。

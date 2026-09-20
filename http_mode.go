@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/internal/normalize"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/internal/normalize"
 )
 
 // HTTP 模式传输（dispatcher 形态）：SDK 负责验签与消息分发，HTTP 服务由外部提供

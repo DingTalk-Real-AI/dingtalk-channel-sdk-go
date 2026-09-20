@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 // botCallbackData 与钉钉 /v1.0/im/bot/messages/get 的 data 字段一一对应。

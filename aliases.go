@@ -7,10 +7,10 @@
 package channel
 
 import (
-	"github.com/typefield/dingtalk-channel-sdk-go/internal/normalize"
-	"github.com/typefield/dingtalk-channel-sdk-go/internal/outbound"
-	"github.com/typefield/dingtalk-channel-sdk-go/internal/safety"
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/internal/normalize"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/internal/outbound"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/internal/safety"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 // ── 类型别名（types 包）──

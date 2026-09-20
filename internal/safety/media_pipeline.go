@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 // MediaPipelineManager 媒体消息批处理管理器。

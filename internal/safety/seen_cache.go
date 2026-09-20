@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 // SeenCache 去重缓存（增强版：三键去重 + 双层缓存）。

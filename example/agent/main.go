@@ -23,7 +23,7 @@ import (
 	"sync"
 	"time"
 
-	channel "github.com/typefield/dingtalk-channel-sdk-go"
+	channel "github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go"
 )
 
 // ── 会话历史（内存版，按 conversationId 分组，群聊共享上下文）──

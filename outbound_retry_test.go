@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/internal/outbound"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/internal/outbound"
 )
 
 // TestRetryOptionsMapping OutboundConfig → RetryOptions 的映射与默认回退。

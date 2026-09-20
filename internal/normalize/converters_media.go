@@ -1,6 +1,6 @@
 package normalize
 
-import "github.com/typefield/dingtalk-channel-sdk-go/types"
+import "github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 
 // convertPicture 提取图片资源；downloadCode 为钉钉侧下载凭证。
 func convertPicture(m map[string]interface{}) (string, []types.Resource) {

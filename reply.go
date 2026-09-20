@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/internal/outbound"
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/internal/outbound"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 // Reply 回复句柄：text/markdown/image 走 sessionWebhook；stream() 走 AI 卡片（SPEC §4）。

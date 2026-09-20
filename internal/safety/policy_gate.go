@@ -5,7 +5,7 @@ package safety
 import (
 	"sync"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 // PolicyGate 消息策略门控（增强版）

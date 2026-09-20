@@ -3,7 +3,7 @@ package safety
 import (
 	"testing"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 func TestPolicyGate_AdminBypass(t *testing.T) {

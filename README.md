@@ -9,7 +9,7 @@ Requires Go 1.21+.
 ## Install
 
 ```bash
-go get github.com/typefield/dingtalk-channel-sdk-go
+go get github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go
 ```
 
 ## Minimal Example
@@ -22,7 +22,7 @@ import (
 	"log"
 	"os"
 
-	channel "github.com/typefield/dingtalk-channel-sdk-go"
+	channel "github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go"
 )
 
 func main() {
@@ -82,7 +82,7 @@ return s.Finish("")
 Application code typically imports only the root package:
 
 ```go
-import channel "github.com/typefield/dingtalk-channel-sdk-go"
+import channel "github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go"
 ```
 
 `types` exposes shared public types; packages under `internal/` are implementation details and carry no compatibility promise.

@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 const (

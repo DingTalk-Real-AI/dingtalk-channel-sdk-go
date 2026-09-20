@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 // SafetyPipeline 安全管线统一门面，整合所有安全组件到单一入口。

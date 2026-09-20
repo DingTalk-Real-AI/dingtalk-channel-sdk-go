@@ -3,7 +3,7 @@ package channel
 import (
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/internal/outbound"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/internal/outbound"
 )
 
 // retryOptions 由 OutboundConfig 推导重试参数；未配置时使用默认（3 次 / 500ms 起步指数退避）。

@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/typefield/dingtalk-channel-sdk-go/types"
+	"github.com/DingTalk-Real-AI/dingtalk-channel-sdk-go/types"
 )
 
 // ChatQueue 管理单个 scope（通常是 conversationID）的批处理 + 串行队列。
