@@ -230,9 +230,11 @@ func (r *replier) DownloadURL(ctx context.Context, downloadCode, msgID string) (
 	var out struct {
 		DownloadURL string `json:"downloadUrl"`
 	}
-	path := fmt.Sprintf("/v1.0/robot/messageFiles/download?downloadCode=%s&messageId=%s&robotCode=%s",
-		downloadCode, msgID, r.cfg.ClientID)
-	if err := r.cards.call(ctx, http.MethodGet, path, nil, &out); err != nil {
+	body := map[string]string{
+		"downloadCode": downloadCode,
+		"robotCode":    r.cfg.ClientID,
+	}
+	if err := r.cards.call(ctx, http.MethodPost, "/v1.0/robot/messageFiles/download", body, &out); err != nil {
 		return "", err
 	}
 	return out.DownloadURL, nil

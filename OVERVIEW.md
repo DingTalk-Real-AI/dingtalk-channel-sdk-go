@@ -1,7 +1,5 @@
 # DingTalk Channel SDK Family · Project Overview
 
-**English** | [简体中文](./OVERVIEW.zh-CN.md)
-
 > Origin issue: [DingTalk-Real-AI/dingtalk-workspace-cli#796](https://github.com/DingTalk-Real-AI/dingtalk-workspace-cli/issues/796)—"Will DingTalk provide an integrated SDK like Channel?"
 > This project provides the answer: **Four languages, aligned behavior, ready to use**.
 

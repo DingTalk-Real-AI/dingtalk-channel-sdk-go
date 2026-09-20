@@ -48,28 +48,37 @@ func TestConvertRichTextAtUsersMerge(t *testing.T) {
 	}
 }
 
-// 对齐 lark channel-sdk 富文本附件区：picture/file 段提取为资源，重复下载码去重。
+// richText 资源提取：picture/file 段提取为资源，重复下载码去重。
+// 兼容 downloadCode / pictureDownloadCode / picture 字段。
 func TestConvertRichTextResources(t *testing.T) {
 	payload := `{"richText":[
 		{"type":"text","text":"图1 "},
+		{"type":"picture","downloadCode":"dc-1"},
+		{"type":"picture","pictureDownloadCode":"dc-1"},
 		{"type":"picture","picture":"dc-1"},
-		{"type":"picture","picture":"dc-1"},
-		{"type":"picture","picture":"dc-2"},
-		{"type":"file","downloadCode":"dc-3","fileName":"report.pdf"},
+		{"type":"picture","pictureDownloadCode":"dc-2"},
+		{"type":"picture","picture":"dc-3"},
+		{"type":"file","downloadCode":"dc-4","fileName":"report.pdf"},
 		{"type":"text","text":" 图2"}
 	]}`
 	text, resources, _ := parseContent("richText", json.RawMessage(payload), nil)
 	if text != "图1  图2" {
 		t.Fatalf("richText text = %q", text)
 	}
-	if len(resources) != 3 {
-		t.Fatalf("resources = %d, want 3（重复 dc-1 去重）: %+v", len(resources), resources)
+	if len(resources) != 4 {
+		t.Fatalf("resources = %d, want 4（重复 dc-1 去重）: %+v", len(resources), resources)
 	}
 	if resources[0].Type != "image" || resources[0].DownloadCode != "dc-1" {
 		t.Fatalf("resource[0] wrong: %+v", resources[0])
 	}
-	if resources[2].Type != "file" || resources[2].DownloadCode != "dc-3" || resources[2].FileName != "report.pdf" {
-		t.Fatalf("file resource wrong: %+v", resources[2])
+	if resources[1].Type != "image" || resources[1].DownloadCode != "dc-2" {
+		t.Fatalf("resource[1] wrong: %+v", resources[1])
+	}
+	if resources[2].Type != "image" || resources[2].DownloadCode != "dc-3" {
+		t.Fatalf("resource[2] wrong: %+v", resources[2])
+	}
+	if resources[3].Type != "file" || resources[3].DownloadCode != "dc-4" || resources[3].FileName != "report.pdf" {
+		t.Fatalf("file resource wrong: %+v", resources[3])
 	}
 }
 

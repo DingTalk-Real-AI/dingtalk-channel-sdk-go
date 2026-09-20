@@ -2,6 +2,7 @@ package channel
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -10,7 +11,7 @@ import (
 	"testing"
 )
 
-// 对齐 lark channel-sdk downloadResourceToFile：流式落盘、原子重命名、不整块占内存。
+// downloadFileToFile：流式落盘、原子重命名、不整块占内存。
 func TestDownloadFileToFile(t *testing.T) {
 	media := strings.Repeat("dingtalk-media-bytes-", 500)
 	var srv *httptest.Server
@@ -19,6 +20,15 @@ func TestDownloadFileToFile(t *testing.T) {
 		case "/v1.0/oauth2/accessToken":
 			writeJSON(w, map[string]any{"accessToken": "tok-1", "expireIn": 7200})
 		case "/v1.0/robot/messageFiles/download":
+			if r.Method != http.MethodPost {
+				http.Error(w, "expected POST", http.StatusMethodNotAllowed)
+				return
+			}
+			var body map[string]string
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body["downloadCode"] != "dc-1" || body["robotCode"] == "" {
+				http.Error(w, "bad request body", http.StatusBadRequest)
+				return
+			}
 			writeJSON(w, map[string]any{"downloadUrl": srv.URL + "/media.bin"})
 		case "/media.bin":
 			w.Header().Set("Content-Type", "application/octet-stream")
@@ -63,6 +73,10 @@ func TestDownloadFileToFileErrors(t *testing.T) {
 		case "/v1.0/oauth2/accessToken":
 			writeJSON(w, map[string]any{"accessToken": "tok-1", "expireIn": 7200})
 		case "/v1.0/robot/messageFiles/download":
+			if r.Method != http.MethodPost {
+				http.Error(w, "expected POST", http.StatusMethodNotAllowed)
+				return
+			}
 			writeJSON(w, map[string]any{"downloadUrl": srv.URL + "/media.bin"})
 		case "/media.bin":
 			w.WriteHeader(http.StatusNotFound)
@@ -94,5 +108,39 @@ func TestDownloadFileToFileErrors(t *testing.T) {
 	// 空 destPath
 	if _, err := ch.DownloadFileToFile(context.Background(), "dc-1", "m-1", "file", ""); err == nil {
 		t.Fatal("expected error for empty destPath")
+	}
+}
+
+func TestDownloadFileSSRFRedirectBypass(t *testing.T) {
+	// targetSrv 模拟内网私有地址服务
+	targetSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("internal-secret"))
+	}))
+	defer targetSrv.Close()
+
+	// redirectSrv 在白名单内，但 302 重定向到 targetSrv（不在白名单）
+	redirectSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/v1.0/oauth2/accessToken":
+			writeJSON(w, map[string]any{"accessToken": "tok-1", "expireIn": 7200})
+		case "/v1.0/robot/messageFiles/download":
+			writeJSON(w, map[string]any{"downloadUrl": r.Host + "/redirect"})
+		case "/redirect":
+			http.Redirect(w, r, targetSrv.URL, http.StatusFound)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer redirectSrv.Close()
+
+	cfg := testConfig(redirectSrv.URL, redirectSrv.URL)
+	// 仅允许 redirectSrv 的 host，不允许 targetSrv 的 host
+	cfg.SSRFAllowlist = []string{redirectSrv.Listener.Addr().String()}
+	ch := New(cfg)
+
+	// 重定向到未加白的目标应被 CheckRedirect 拦截
+	_, err := ch.DownloadFile(context.Background(), "dc-1", "m-1", "file")
+	if err == nil {
+		t.Fatal("expected SSRF redirect bypass to be blocked, but download succeeded")
 	}
 }

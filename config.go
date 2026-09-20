@@ -73,6 +73,8 @@ type Config struct {
 	Outbound *OutboundConfig
 	// SSRFAllowlist 白名单主机名（精确或 *.suffix），命中跳过公网校验。
 	SSRFAllowlist []string
+	// DownloadTimeout 媒体文件下载超时（默认 5m，<=0 表示采用默认值）。
+	DownloadTimeout time.Duration
 	// Transport 入站传输模式：TransportStream（默认）或 TransportHTTP（HTTP 模式）。
 	Transport string
 	// HTTPTimestampTolerance HTTP 模式验签时间戳容忍窗口（默认 1h，<=0 关闭窗口检查）。
@@ -112,6 +114,9 @@ func (c *Config) fill() {
 	}
 	if c.KeepAliveIdle <= 0 {
 		c.KeepAliveIdle = DefaultKeepAliveIdle
+	}
+	if c.DownloadTimeout <= 0 {
+		c.DownloadTimeout = 5 * time.Minute
 	}
 	if c.Transport == "" {
 		c.Transport = TransportStream

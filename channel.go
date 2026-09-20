@@ -3,6 +3,7 @@ package channel
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -41,8 +42,9 @@ type Channel struct {
 	cards  *cardClient
 	bucket *tokenBucket
 	oapi   *oapiClient
-	conn   *streamConn
-	httpc  *http.Client
+	conn       *streamConn
+	httpc      *http.Client
+	mediaHttpc *http.Client
 	
 	// 统一安全管线：过期/去重/策略/锁/队列全在这里
 	pipeline *safety.SafetyPipeline
@@ -76,6 +78,15 @@ func New(cfg Config) *Channel {
 		oapi:        newOapiClient(&cfg, httpc),
 		bucket:      bucket,
 		httpc:       httpc,
+		mediaHttpc: &http.Client{
+			Timeout: cfg.DownloadTimeout,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				if len(via) >= 10 {
+					return errors.New("stopped after 10 redirects")
+				}
+				return safety.AssertPublicURLWithAllowlist(req.Context(), req.URL.String(), cfg.SSRFAllowlist)
+			},
+		},
 		botIdentity: newBotIdentityProvider(&cfg, httpc, tokens),
 		hooks:       newLifecycleHooks(),
 		convLocks:   make(map[string]*sync.Mutex),
@@ -360,8 +371,11 @@ func (c *Channel) openMedia(ctx context.Context, downloadCode, msgID, mediaType 
 	var out struct {
 		DownloadURL string `json:"downloadUrl"`
 	}
-	path := "/v1.0/robot/messageFiles/download?downloadCode=" + downloadCode + "&messageId=" + msgID + "&robotCode=" + c.cfg.ClientID
-	if err := c.cards.call(ctx, http.MethodGet, path, nil, &out); err != nil {
+	body := map[string]string{
+		"downloadCode": downloadCode,
+		"robotCode":    c.cfg.ClientID,
+	}
+	if err := c.cards.call(ctx, http.MethodPost, "/v1.0/robot/messageFiles/download", body, &out); err != nil {
 		return nil, err
 	}
 	if out.DownloadURL == "" {
@@ -378,7 +392,7 @@ func (c *Channel) openMedia(ctx context.Context, downloadCode, msgID, mediaType 
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.httpc.Do(req)
+	resp, err := c.mediaHttpc.Do(req)
 	if err != nil {
 		return nil, err
 	}
