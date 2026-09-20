@@ -3,8 +3,12 @@ package channel
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
@@ -38,8 +42,9 @@ type Channel struct {
 	cards  *cardClient
 	bucket *tokenBucket
 	oapi   *oapiClient
-	conn   *streamConn
-	httpc  *http.Client
+	conn       *streamConn
+	httpc      *http.Client
+	mediaHttpc *http.Client
 	
 	// 统一安全管线：过期/去重/策略/锁/队列全在这里
 	pipeline *safety.SafetyPipeline
@@ -73,6 +78,15 @@ func New(cfg Config) *Channel {
 		oapi:        newOapiClient(&cfg, httpc),
 		bucket:      bucket,
 		httpc:       httpc,
+		mediaHttpc: &http.Client{
+			Timeout: cfg.DownloadTimeout,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				if len(via) >= 10 {
+					return errors.New("stopped after 10 redirects")
+				}
+				return safety.AssertPublicURLWithAllowlist(req.Context(), req.URL.String(), cfg.SSRFAllowlist)
+			},
+		},
 		botIdentity: newBotIdentityProvider(&cfg, httpc, tokens),
 		hooks:       newLifecycleHooks(),
 		convLocks:   make(map[string]*sync.Mutex),
@@ -302,9 +316,53 @@ func (c *Channel) lockConversation(id string) func() {
 
 // ── DownloadFile ──
 
-// DownloadFile 下载媒体文件。
+// DownloadFile 下载媒体文件到内存。
 // mediaType: "image" | "file" | "video" | "voice"
 func (c *Channel) DownloadFile(ctx context.Context, downloadCode, msgID, mediaType string) ([]byte, error) {
+	resp, err := c.openMedia(ctx, downloadCode, msgID, mediaType)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
+}
+
+// DownloadFileToFile 流式下载媒体文件到本地路径，不整块占用内存（大附件只有流缓冲开销）。
+// destPath 的父目录必须已存在；先写同目录临时文件再原子重命名，失败不落半截文件。
+// 返回写入的字节数。mediaType: "image" | "file" | "video" | "voice"
+func (c *Channel) DownloadFileToFile(ctx context.Context, downloadCode, msgID, mediaType, destPath string) (int64, error) {
+	if destPath == "" {
+		return 0, &channelError{"destPath cannot be empty"}
+	}
+	tmp, err := os.CreateTemp(filepath.Dir(destPath), "."+filepath.Base(destPath)+".tmp-*")
+	if err != nil {
+		return 0, err
+	}
+	tmpName := tmp.Name()
+
+	resp, err := c.openMedia(ctx, downloadCode, msgID, mediaType)
+	if err != nil {
+		_ = tmp.Close()
+		_ = os.Remove(tmpName)
+		return 0, err
+	}
+	n, err := io.Copy(tmp, resp.Body)
+	_ = resp.Body.Close()
+	if cerr := tmp.Close(); err == nil {
+		err = cerr
+	}
+	if err == nil {
+		err = os.Rename(tmpName, destPath)
+	}
+	if err != nil {
+		_ = os.Remove(tmpName)
+		return n, err
+	}
+	return n, nil
+}
+
+// openMedia 换取媒体下载 URL（含 SSRF 校验）并打开响应体。
+func (c *Channel) openMedia(ctx context.Context, downloadCode, msgID, mediaType string) (*http.Response, error) {
 	if downloadCode == "" {
 		return nil, &channelError{"downloadCode cannot be empty"}
 	}
@@ -313,8 +371,11 @@ func (c *Channel) DownloadFile(ctx context.Context, downloadCode, msgID, mediaTy
 	var out struct {
 		DownloadURL string `json:"downloadUrl"`
 	}
-	path := "/v1.0/robot/messageFiles/download?downloadCode=" + downloadCode + "&messageId=" + msgID + "&robotCode=" + c.cfg.ClientID
-	if err := c.cards.call(ctx, http.MethodGet, path, nil, &out); err != nil {
+	body := map[string]string{
+		"downloadCode": downloadCode,
+		"robotCode":    c.cfg.ClientID,
+	}
+	if err := c.cards.call(ctx, http.MethodPost, "/v1.0/robot/messageFiles/download", body, &out); err != nil {
 		return nil, err
 	}
 	if out.DownloadURL == "" {
@@ -331,13 +392,13 @@ func (c *Channel) DownloadFile(ctx context.Context, downloadCode, msgID, mediaTy
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.httpc.Do(req)
+	resp, err := c.mediaHttpc.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, &channelError{"download failed: http " + string(rune(resp.StatusCode))}
+		_ = resp.Body.Close()
+		return nil, &channelError{"download failed: http " + strconv.Itoa(resp.StatusCode)}
 	}
-	return io.ReadAll(resp.Body)
+	return resp, nil
 }
