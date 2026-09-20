@@ -4,7 +4,7 @@
 
 DingTalk Channel SDK (Go) — a conversation access layer decoupled from any agent runtime: Stream long connection, inbound event normalization, a unified safety pipeline, and streaming AI-card replies, all behind one high-level Channel.
 
-Requires Go 1.21+.
+Requires Go 1.22+.
 
 ## Install
 
