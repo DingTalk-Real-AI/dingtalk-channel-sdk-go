@@ -4,7 +4,7 @@
 
 钉钉 Channel SDK（Go 版）——与 Agent runtime 解耦的会话接入层：Stream 长连接、入站事件归一化、统一安全管线、AI 卡片流式回复，一个高阶 Channel 全部覆盖。
 
-要求 Go 1.21+。
+要求 Go 1.22+。
 
 ## 安装
 
