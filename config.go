@@ -38,6 +38,8 @@ const (
 type Config struct {
 	ClientID     string
 	ClientSecret string
+	// A2UIClient 显式配置的 A2UI 发送通道；默认不启用。
+	A2UIClient A2UIClient
 
 	// APIBase 覆盖默认 https://api.dingtalk.com（测试/私有化用）。
 	APIBase string
